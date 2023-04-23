@@ -29,3 +29,27 @@ module.exports = (serviceName) => {
    });
    return trace.getTracer(serviceName);
 };
+
+const opentelemetry = require("@opentelemetry/exporter-jaeger");
+const {
+  getNodeAutoInstrumentations,
+} = require("@opentelemetry/auto-instrumentations-node");
+const {
+  OTLPTraceExporter,
+} = require("@opentelemetry/exporter-trace-otlp-proto");
+const {
+  OTLPMetricExporter
+} = require("@opentelemetry/exporter-metrics-otlp-proto");
+
+const sdk = new opentelemetry.NodeSDK({
+  traceExporter: new OTLPTraceExporter({
+  }),
+  metricReader: new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporter({
+      headers: {}, // an optional object containing custom headers to be sent with each request
+      concurrencyLimit: 1, // an optional limit on pending requests
+    }),
+  }),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+sdk.start();
