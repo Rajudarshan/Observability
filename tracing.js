@@ -1,3 +1,5 @@
+const opentelemetry = require("@opentelemetry/exporter-jaeger");
+
 const { Resource } = require("@opentelemetry/resources");
 const { SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
 const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-base');
@@ -11,7 +13,7 @@ const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
 const { registerInstrumentations } = require("@opentelemetry/instrumentation");
 //Exporter
 module.exports = (serviceName) => {
-   const exporter = new ConsoleSpanExporter();
+   const exporter = new opentelemetry.JaegerExporter();
    const provider = new NodeTracerProvider({
        resource: new Resource({
            [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
@@ -29,27 +31,3 @@ module.exports = (serviceName) => {
    });
    return trace.getTracer(serviceName);
 };
-
-const opentelemetry = require("@opentelemetry/exporter-jaeger");
-const {
-  getNodeAutoInstrumentations,
-} = require("@opentelemetry/auto-instrumentations-node");
-const {
-  OTLPTraceExporter,
-} = require("@opentelemetry/exporter-trace-otlp-proto");
-const {
-  OTLPMetricExporter
-} = require("@opentelemetry/exporter-metrics-otlp-proto");
-
-const sdk = new opentelemetry.NodeSDK({
-  traceExporter: new OTLPTraceExporter({
-  }),
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter({
-      headers: {}, // an optional object containing custom headers to be sent with each request
-      concurrencyLimit: 1, // an optional limit on pending requests
-    }),
-  }),
-  instrumentations: [getNodeAutoInstrumentations()],
-});
-sdk.start();
